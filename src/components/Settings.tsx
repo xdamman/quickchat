@@ -26,6 +26,7 @@ export function Settings({ publicKeyHex, displayName, onLogout, onBack }: Props)
         <h1>Settings</h1>
       </div>
 
+      <div className="settings-content">
       <div className="settings-section">
         <h2>Identity</h2>
         <div className="settings-card">
@@ -57,6 +58,7 @@ export function Settings({ publicKeyHex, displayName, onLogout, onBack }: Props)
       <button className="btn-logout" onClick={onLogout}>
         Logout
       </button>
+      </div>
     </div>
   )
 }
