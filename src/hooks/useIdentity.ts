@@ -18,17 +18,13 @@ export function useIdentity() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const hasStoredCredential = getStoredCredential() !== null
+  // Always show "Unlock with passkey" — discoverable credentials work
+  // without localStorage (OS passkey picker finds them by domain)
+  const hasStoredCredential = true
 
-  // Try to authenticate with existing credential on mount
   useEffect(() => {
-    if (!hasStoredCredential) {
-      setLoading(false)
-      return
-    }
-    // Don't auto-authenticate — user needs to click to trigger biometric
     setLoading(false)
-  }, [hasStoredCredential])
+  }, [])
 
   const login = useCallback(async () => {
     setError(null)

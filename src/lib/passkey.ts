@@ -164,19 +164,15 @@ export async function registerPasskey(displayName: string): Promise<PasskeyResul
 
 export async function authenticatePasskey(): Promise<PasskeyResult> {
   const stored = getStoredCredential()
-  if (!stored) throw new Error('No stored credential')
-
   const challenge = crypto.getRandomValues(new Uint8Array(32))
-  const rawIdBytes = fromBase64Url(stored.rawId)
 
+  // Use discoverable credentials (empty allowCredentials) so the OS passkey
+  // picker shows ALL passkeys for this domain. This works across Safari vs
+  // standalone PWA contexts which have separate localStorage.
   const authOptions: PublicKeyCredentialRequestOptions = {
     challenge: challenge.buffer as ArrayBuffer,
     rpId: window.location.hostname,
-    allowCredentials: [{
-      id: rawIdBytes.buffer.slice(rawIdBytes.byteOffset, rawIdBytes.byteOffset + rawIdBytes.byteLength) as ArrayBuffer,
-      type: 'public-key',
-      transports: ['internal']
-    }],
+    allowCredentials: [],
     userVerification: 'required',
     extensions: {
       // @ts-expect-error PRF extension not in TS types
@@ -203,5 +199,17 @@ export async function authenticatePasskey(): Promise<PasskeyResult> {
 
   const publicKeyHex = bytesToHex(schnorr.getPublicKey(privateKey))
 
-  return { privateKey, publicKeyHex, displayName: stored.displayName, prfSupported }
+  // Resolve display name: from stored credential, or from the passkey user handle
+  const displayName = stored?.displayName || ''
+
+  // Update stored credential to match the passkey that was actually used
+  // (handles Safari vs PWA context mismatch)
+  storeCredential({
+    credentialId: credential.id,
+    rawId: toBase64Url(credential.rawId),
+    displayName,
+    npub: publicKeyHex
+  })
+
+  return { privateKey, publicKeyHex, displayName, prfSupported }
 }
