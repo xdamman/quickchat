@@ -3,6 +3,7 @@ import { type AppConfig, type Contact, getRelayUrls, getVisibleContacts } from '
 import { useIdentity } from './hooks/useIdentity'
 import { useRelay } from './hooks/useRelay'
 import { useMessages } from './hooks/useMessages'
+import { useKeyboardHeight } from './hooks/useKeyboardHeight'
 import { npubToHex, hexToNpub } from './lib/nip19'
 import { publishKind0 } from './lib/profile'
 import { Onboarding } from './components/Onboarding'
@@ -99,8 +100,13 @@ export function App({ config }: Props) {
     )
   }
 
+  const keyboardHeight = useKeyboardHeight()
+  const appStyle = keyboardHeight > 0
+    ? { height: `calc(100dvh - ${keyboardHeight}px)` } as React.CSSProperties
+    : undefined
+
   return (
-    <div className="app">
+    <div className="app" style={appStyle}>
       {/* Connection status indicator */}
       {status !== 'connected' && (
         <div className={`status-bar status-${status}`}>
