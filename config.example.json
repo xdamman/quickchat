@@ -1,0 +1,19 @@
+{
+  "relay": "wss://relay.yourdomain.com",
+  "contacts": [
+    {
+      "npub": "npub1...",
+      "name": "Your Name",
+      "avatar": "",
+      "description": "Human"
+    }
+  ],
+  "rateLimits": {
+    "messagesPerDay": 50,
+    "messagesPerWeek": 200,
+    "messagesPerMonth": 500
+  },
+  "nip05Domain": "yourdomain.com",
+  "title": "Chat with me",
+  "description": "Send me a message. Encrypted, no app needed."
+}
