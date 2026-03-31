@@ -15,12 +15,20 @@ export interface RateLimits {
 }
 
 export interface AppConfig {
-  relay: string
+  relay?: string
+  relays?: string[]
   contacts: Contact[]
   rateLimits: RateLimits
   nip05Domain?: string
   title: string
   description: string
+}
+
+/** Return the list of relay URLs from config (supports both `relay` and `relays` fields) */
+export function getRelayUrls(config: AppConfig): string[] {
+  if (config.relays && config.relays.length > 0) return config.relays
+  if (config.relay) return [config.relay]
+  return []
 }
 
 let _config: AppConfig | null = null

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { type AppConfig, type Contact } from './config'
+import { type AppConfig, type Contact, getRelayUrls } from './config'
 import { useIdentity } from './hooks/useIdentity'
 import { useRelay } from './hooks/useRelay'
 import { useMessages } from './hooks/useMessages'
@@ -17,7 +17,8 @@ interface Props {
 
 export function App({ config }: Props) {
   const { identity, loading, error, hasStoredCredential, login, register, logout } = useIdentity()
-  const { relay, status } = useRelay(identity ? config.relay : null)
+  const relayUrls = identity ? getRelayUrls(config) : null
+  const { relay, status } = useRelay(relayUrls)
   const [screen, setScreen] = useState<Screen>('contacts')
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
 

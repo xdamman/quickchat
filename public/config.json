@@ -1,5 +1,10 @@
 {
-  "relay": "wss://relay.xavierdamman.com",
+  "relays": [
+    "wss://relay.xavierdamman.com",
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+    "wss://relay.primal.net"
+  ],
   "contacts": [
     {
       "npub": "npub1xsp9fcq340dzaqjctjl7unu3k0c82jdxc350uqym70k8vedzuvdst562dr",

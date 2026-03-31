@@ -1,11 +1,17 @@
 {
-  "relay": "wss://relay.yourdomain.com",
+  "relays": [
+    "wss://relay.yourdomain.com",
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+    "wss://relay.primal.net"
+  ],
   "contacts": [
     {
       "npub": "npub1...",
       "name": "Your Name",
       "avatar": "",
-      "description": "Human"
+      "description": "Human",
+      "protocol": "nip04"
     }
   ],
   "rateLimits": {
