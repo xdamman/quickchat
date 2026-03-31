@@ -667,6 +667,64 @@ html, body {
   color: #fff;
 }
 
+/* ========== INSTALL BANNER ========== */
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--gray-800);
+  color: #fff;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.install-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.install-banner-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.install-banner-text {
+  line-height: 1.3;
+}
+
+.install-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.install-banner-btn {
+  padding: 5px 12px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+}
+
+.install-banner-dismiss {
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px;
+}
+
 /* Desktop: center the app like a phone preview */
 @media (min-width: 481px) {
   .app, .onboarding, .contact-list, .chat-view, .settings {
