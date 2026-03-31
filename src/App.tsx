@@ -22,11 +22,13 @@ export function App({ config }: Props) {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
 
   const contactHex = selectedContact ? npubToHex(selectedContact.npub) : null
+  const contactProtocol = selectedContact?.protocol || 'nip17'
   const { messages, sendMessage, sending } = useMessages(
     relay,
     identity?.privateKey ?? null,
     identity?.publicKeyHex ?? null,
-    contactHex
+    contactHex,
+    contactProtocol
   )
 
   const handleSelectContact = useCallback((contact: Contact) => {

@@ -97,7 +97,8 @@ html, body, #root {
   margin-bottom: 32px;
 }
 
-.onboarding form {
+.onboarding form,
+.onboarding-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -134,6 +135,23 @@ html, body, #root {
 
 .btn-primary:hover:not(:disabled) { background: var(--blue-dark); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  width: 100%;
+  padding: 14px 24px;
+  background: none;
+  color: var(--blue);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) { background: var(--gray-50); }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .error-msg {
   color: #dc2626;
@@ -356,10 +374,27 @@ html, body, #root {
   margin-bottom: 2px;
 }
 
+.bubble-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
 .bubble-time {
   font-size: 11px;
   opacity: 0.65;
-  text-align: right;
+}
+
+.delivery-ticks {
+  font-size: 11px;
+  opacity: 0.5;
+  letter-spacing: -2px;
+  margin-left: 2px;
+}
+
+.delivery-ticks.confirmed {
+  opacity: 0.7;
 }
 
 /* ========== COMPOSE BAR ========== */

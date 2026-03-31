@@ -2,12 +2,14 @@ import { type VerifiedEvent } from 'nostr-tools'
 
 export type SubCallback = (event: VerifiedEvent) => void
 export type StatusCallback = (status: 'connecting' | 'connected' | 'disconnected') => void
+export type OkCallback = (eventId: string, accepted: boolean, message: string) => void
 
 export class RelayConnection {
   private ws: WebSocket | null = null
   private url: string
   private subs = new Map<string, SubCallback>()
   private statusCb: StatusCallback | null = null
+  private okCb: OkCallback | null = null
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
   private shouldConnect = false
   private subCounter = 0
@@ -19,6 +21,10 @@ export class RelayConnection {
 
   onStatus(cb: StatusCallback) {
     this.statusCb = cb
+  }
+
+  onOk(cb: OkCallback) {
+    this.okCb = cb
   }
 
   connect() {
@@ -52,6 +58,12 @@ export class RelayConnection {
           const subId = msg[1] as string
           const event = msg[2] as VerifiedEvent
           this.subs.get(subId)?.(event)
+        } else if (msg[0] === 'OK' && msg[1]) {
+          // ["OK", event_id, true/false, "message"]
+          const eventId = msg[1] as string
+          const accepted = msg[2] as boolean
+          const message = (msg[3] as string) || ''
+          this.okCb?.(eventId, accepted, message)
         }
       } catch { /* ignore parse errors */ }
     }
@@ -74,10 +86,10 @@ export class RelayConnection {
     }, 3000)
   }
 
-  subscribe(filter: Record<string, unknown>, cb: SubCallback): string {
+  subscribe(filters: Record<string, unknown> | Record<string, unknown>[], cb: SubCallback): string {
     const subId = `sub_${++this.subCounter}`
     this.subs.set(subId, cb)
-    const req = ['REQ', subId, filter]
+    const req = Array.isArray(filters) ? ['REQ', subId, ...filters] : ['REQ', subId, filters]
     this.pendingRequests.push(req)
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(req))
@@ -93,15 +105,15 @@ export class RelayConnection {
     }
   }
 
-  publish(event: VerifiedEvent): Promise<void> {
+  publish(event: VerifiedEvent): Promise<string> {
     return new Promise((resolve, reject) => {
       if (this.ws?.readyState !== WebSocket.OPEN) {
         reject(new Error('Not connected to relay'))
         return
       }
       this.ws.send(JSON.stringify(['EVENT', event]))
-      // Simple approach: resolve immediately. A production app would wait for OK.
-      resolve()
+      // Return the event id — caller tracks OK via onOk callback
+      resolve(event.id)
     })
   }
 

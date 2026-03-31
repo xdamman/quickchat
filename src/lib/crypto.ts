@@ -1,4 +1,5 @@
 import * as nip44 from 'nostr-tools/nip44'
+import * as nip04 from 'nostr-tools/nip04'
 import { finalizeEvent, type EventTemplate, type VerifiedEvent } from 'nostr-tools'
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils'
 import { schnorr } from '@noble/curves/secp256k1'
@@ -84,6 +85,56 @@ export function decryptGiftWrappedDM(
     }
   } catch (e) {
     console.warn('Failed to decrypt gift-wrapped DM:', e)
+    return null
+  }
+}
+
+/**
+ * Create a NIP-04 encrypted DM (kind:4).
+ */
+export async function createNip04DM(
+  content: string,
+  senderPrivkey: Uint8Array,
+  recipientPubkeyHex: string
+): Promise<VerifiedEvent> {
+  const senderPrivkeyHex = bytesToHex(senderPrivkey)
+  const encrypted = await nip04.encrypt(senderPrivkeyHex, recipientPubkeyHex, content)
+
+  const event: EventTemplate = {
+    kind: 4,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [['p', recipientPubkeyHex]],
+    content: encrypted
+  }
+
+  return finalizeEvent(event, senderPrivkey)
+}
+
+/**
+ * Decrypt an incoming NIP-04 DM (kind:4).
+ */
+export async function decryptNip04DM(
+  event: VerifiedEvent,
+  recipientPrivkey: Uint8Array,
+  recipientPubkeyHex: string
+): Promise<{ content: string; senderPubkey: string; createdAt: number } | null> {
+  try {
+    const recipientPrivkeyHex = bytesToHex(recipientPrivkey)
+    // The other party's pubkey: if we sent it, use the p-tag; if they sent it, use event.pubkey
+    const isMine = event.pubkey === recipientPubkeyHex
+    const otherPubkey = isMine
+      ? (event.tags.find(t => t[0] === 'p')?.[1] || '')
+      : event.pubkey
+
+    const content = await nip04.decrypt(recipientPrivkeyHex, otherPubkey, event.content)
+
+    return {
+      content,
+      senderPubkey: event.pubkey,
+      createdAt: event.created_at
+    }
+  } catch (e) {
+    console.warn('Failed to decrypt NIP-04 DM:', e)
     return null
   }
 }

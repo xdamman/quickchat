@@ -27,6 +27,13 @@ function formatDate(ts: number): string {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
+function DeliveryTicks({ status }: { status?: string }) {
+  if (!status || status === 'pending') return null
+  if (status === 'published') return <span className="delivery-ticks">✓</span>
+  if (status === 'confirmed') return <span className="delivery-ticks confirmed">✓✓</span>
+  return null
+}
+
 export function ChatView({ contact, messages, config, sending, onSend, onBack }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -60,7 +67,10 @@ export function ChatView({ contact, messages, config, sending, onSend, onBack }:
               {showDate && <div className="chat-date-separator">{dateLabel}</div>}
               <div className={`chat-bubble ${msg.isMine ? 'mine' : 'theirs'}`}>
                 <div className="bubble-content">{msg.content}</div>
-                <div className="bubble-time">{formatTime(msg.createdAt)}</div>
+                <div className="bubble-meta">
+                  <span className="bubble-time">{formatTime(msg.createdAt)}</span>
+                  {msg.isMine && <DeliveryTicks status={msg.deliveryStatus} />}
+                </div>
               </div>
             </div>
           )

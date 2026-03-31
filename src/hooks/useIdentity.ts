@@ -2,6 +2,9 @@ import { useState, useCallback, useEffect } from 'react'
 import { registerPasskey, authenticatePasskey, getStoredCredential, clearCredential, type PasskeyResult } from '../lib/passkey'
 import { saveIdentity, getIdentity, clearAllData } from '../lib/storage'
 import { clearRateLimits } from '../lib/rate-limit'
+import { clearEventLog } from '../lib/event-log'
+
+const DISPLAY_NAME_KEY = 'quickchat:displayName'
 
 export interface Identity {
   privateKey: Uint8Array
@@ -32,6 +35,11 @@ export function useIdentity() {
     setLoading(true)
     try {
       const result = await authenticatePasskey()
+      // Check for stored display name
+      const storedName = localStorage.getItem(DISPLAY_NAME_KEY)
+      if (storedName) {
+        result.displayName = storedName
+      }
       setIdentity(result)
     } catch (e: any) {
       setError(e.message || 'Authentication failed')
@@ -45,6 +53,8 @@ export function useIdentity() {
     setLoading(true)
     try {
       const result = await registerPasskey(displayName)
+      // Store display name in localStorage for persistence
+      localStorage.setItem(DISPLAY_NAME_KEY, displayName)
       await saveIdentity({ displayName, pubkeyHex: result.publicKeyHex })
       setIdentity(result)
     } catch (e: any) {
@@ -57,6 +67,8 @@ export function useIdentity() {
   const logout = useCallback(async () => {
     clearCredential()
     clearRateLimits()
+    clearEventLog()
+    localStorage.removeItem(DISPLAY_NAME_KEY)
     await clearAllData()
     setIdentity(null)
   }, [])

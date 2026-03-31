@@ -5,7 +5,8 @@
       "npub": "npub1xsp9fcq340dzaqjctjl7unu3k0c82jdxc350uqym70k8vedzuvdst562dr",
       "name": "Xavier",
       "avatar": "",
-      "description": "Human"
+      "description": "Human",
+      "protocol": "nip04"
     }
   ],
   "rateLimits": {

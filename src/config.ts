@@ -1,8 +1,11 @@
+export type ContactProtocol = 'nip04' | 'nip17'
+
 export interface Contact {
   npub: string
   name: string
   avatar: string
   description: string
+  protocol?: ContactProtocol
 }
 
 export interface RateLimits {

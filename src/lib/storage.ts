@@ -4,7 +4,9 @@
  */
 
 const DB_NAME = 'quickchat'
-const DB_VERSION = 1
+const DB_VERSION = 2
+
+export type DeliveryStatus = 'pending' | 'published' | 'confirmed'
 
 export interface StoredMessage {
   id: string // event id
@@ -13,6 +15,7 @@ export interface StoredMessage {
   senderPubkey: string
   createdAt: number
   isMine: boolean
+  deliveryStatus?: DeliveryStatus
 }
 
 export interface StoredIdentity {
@@ -23,16 +26,17 @@ export interface StoredIdentity {
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION)
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (event) => {
       const db = req.result
-      if (!db.objectStoreNames.contains('messages')) {
+      const oldVersion = event.oldVersion
+      if (oldVersion < 1) {
         const store = db.createObjectStore('messages', { keyPath: 'id' })
         store.createIndex('byContact', 'contactPubkey', { unique: false })
         store.createIndex('byTime', ['contactPubkey', 'createdAt'], { unique: false })
-      }
-      if (!db.objectStoreNames.contains('identity')) {
         db.createObjectStore('identity', { keyPath: 'key' })
       }
+      // v2: deliveryStatus field added to messages — no schema change needed,
+      // it's just a new optional field on existing objects
     }
     req.onsuccess = () => resolve(req.result)
     req.onerror = () => reject(req.error)
@@ -45,6 +49,24 @@ export async function saveMessage(msg: StoredMessage): Promise<void> {
     const tx = db.transaction('messages', 'readwrite')
     tx.objectStore('messages').put(msg)
     tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function updateDeliveryStatus(id: string, status: DeliveryStatus): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('messages', 'readwrite')
+    const store = tx.objectStore('messages')
+    const getReq = store.get(id)
+    getReq.onsuccess = () => {
+      const msg = getReq.result as StoredMessage | undefined
+      if (msg) {
+        msg.deliveryStatus = status
+        store.put(msg)
+      }
+      tx.oncomplete = () => resolve()
+    }
     tx.onerror = () => reject(tx.error)
   })
 }
