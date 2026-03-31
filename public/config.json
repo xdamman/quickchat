@@ -46,7 +46,8 @@
   ],
   "whitelist": [
     "npub1xsp9fcq340dzaqjctjl7unu3k0c82jdxc350uqym70k8vedzuvdst562dr",
-    "npub1r4ls4h8elem9p47v0jd5k9pl4n8emtf00amc7vwzuvgd3mg4lpts4l5txl"
+    "npub1r4ls4h8elem9p47v0jd5k9pl4n8emtf00amc7vwzuvgd3mg4lpts4l5txl",
+    "npub12zkpd7p3y0sytp55qk5u20qt5a2hew0wr6pjjtas4qguhyduey8qhxv30a"
   ],
   "rateLimits": {
     "messagesPerDay": 50,
