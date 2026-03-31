@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { hexToNpub, shortenNpub } from '../lib/nip19'
 
 interface Props {
@@ -9,9 +10,13 @@ interface Props {
 
 export function Settings({ publicKeyHex, displayName, onLogout, onBack }: Props) {
   const npub = hexToNpub(publicKeyHex)
+  const [copied, setCopied] = useState(false)
 
   const copyNpub = () => {
-    navigator.clipboard.writeText(npub).catch(() => {})
+    navigator.clipboard.writeText(npub).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }).catch(() => {})
   }
 
   return (
@@ -30,17 +35,12 @@ export function Settings({ publicKeyHex, displayName, onLogout, onBack }: Props)
           </div>
           <div className="settings-row">
             <span className="settings-label">npub</span>
-            <span className="mono">{shortenNpub(npub)}</span>
+            <button className="npub-copy-btn" onClick={copyNpub}>
+              <span className="mono">{shortenNpub(npub)}</span>
+              <span className="npub-copy-icon">{copied ? '✓' : '📋'}</span>
+              {copied && <span className="npub-copied-text">Copied!</span>}
+            </button>
           </div>
-        </div>
-      </div>
-
-      <div className="settings-section">
-        <h2>Security</h2>
-        <div className="settings-card">
-          <button className="settings-action" onClick={copyNpub}>
-            📋 Copy npub
-          </button>
         </div>
       </div>
 

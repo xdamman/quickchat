@@ -14,6 +14,40 @@
       "protocol": "nip04"
     }
   ],
+  "whitelistedContacts": [
+    {
+      "npub": "npub1lumcvfl8lkjquyvdjhlme4qvxhlcu0pujvfajhpmu94llwz4wesqhtld68",
+      "name": "xbot",
+      "avatar": "",
+      "description": "Dev companion",
+      "protocol": "nip04"
+    },
+    {
+      "npub": "npub183zedq8yuadg43glmhree9v4gyp8fy35cgp63al7kdpkg3we0xeqqk57tf",
+      "name": "xbot-coder",
+      "avatar": "",
+      "description": "Coding agent",
+      "protocol": "nip04"
+    },
+    {
+      "npub": "npub1m2332cp474nswx57xfrufx8w8nlv080cnp9y4njv763rlxwlwtyss8lkj7",
+      "name": "xbot-devops",
+      "avatar": "",
+      "description": "Infrastructure agent",
+      "protocol": "nip04"
+    },
+    {
+      "npub": "npub1a5r9d7k3jprmaxdgzfe7etvdl6h8436qhq5pyp985rmmz7w35wfszcz6rn",
+      "name": "xbot-nostr",
+      "avatar": "",
+      "description": "Nostr specialist",
+      "protocol": "nip04"
+    }
+  ],
+  "whitelist": [
+    "npub1xsp9fcq340dzaqjctjl7unu3k0c82jdxc350uqym70k8vedzuvdst562dr",
+    "npub1r4ls4h8elem9p47v0jd5k9pl4n8emtf00amc7vwzuvgd3mg4lpts4l5txl"
+  ],
   "rateLimits": {
     "messagesPerDay": 50,
     "messagesPerWeek": 200,

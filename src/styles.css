@@ -347,6 +347,51 @@ html, body, #root {
   font-weight: 500;
 }
 
+.chat-bubble-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.chat-bubble-row.mine {
+  justify-content: flex-end;
+}
+
+.chat-bubble-row.theirs {
+  justify-content: flex-start;
+}
+
+.chat-avatar-slot {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.chat-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.chat-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.chat-avatar-spacer {
+  width: 32px;
+  height: 32px;
+}
+
 .chat-bubble {
   max-width: 80%;
   padding: 10px 14px;
@@ -357,14 +402,12 @@ html, body, #root {
 }
 
 .chat-bubble.mine {
-  align-self: flex-end;
   background: var(--blue);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
 
 .chat-bubble.theirs {
-  align-self: flex-start;
   background: var(--gray-100);
   color: var(--gray-900);
   border-bottom-left-radius: 4px;
@@ -538,6 +581,33 @@ html, body, #root {
 }
 
 .settings-action:hover { background: var(--gray-100); }
+
+.npub-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: var(--font);
+  transition: background 0.15s;
+}
+
+.npub-copy-btn:hover {
+  background: var(--gray-100);
+}
+
+.npub-copy-icon {
+  font-size: 14px;
+}
+
+.npub-copied-text {
+  font-size: 12px;
+  color: #16a34a;
+  font-weight: 500;
+}
 
 .settings-about {
   padding: 14px 16px;

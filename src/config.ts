@@ -18,10 +18,21 @@ export interface AppConfig {
   relay?: string
   relays?: string[]
   contacts: Contact[]
+  whitelistedContacts?: Contact[]
+  whitelist?: string[]
   rateLimits: RateLimits
   nip05Domain?: string
   title: string
   description: string
+}
+
+/** Return contacts visible to a given user npub */
+export function getVisibleContacts(config: AppConfig, userNpub: string): Contact[] {
+  const isWhitelisted = config.whitelist?.includes(userNpub) ?? false
+  if (isWhitelisted) {
+    return [...config.contacts, ...(config.whitelistedContacts || [])]
+  }
+  return config.contacts
 }
 
 /** Return the list of relay URLs from config (supports both `relay` and `relays` fields) */
