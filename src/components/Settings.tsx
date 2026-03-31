@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { hexToNpub, shortenNpub } from '../lib/nip19'
 
+declare const __GIT_SHA__: string
+declare const __GIT_MESSAGE__: string
+declare const __GIT_TIMESTAMP__: string
+
 interface Props {
   publicKeyHex: string
   displayName: string
@@ -49,9 +53,26 @@ export function Settings({ publicKeyHex, displayName, onLogout, onBack }: Props)
         <h2>About</h2>
         <div className="settings-card">
           <p className="settings-about">
-            Powered by Nostr. Messages are end-to-end encrypted (NIP-17).
+            Powered by Nostr. Messages are end-to-end encrypted.
             Your key never leaves this device.
           </p>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <h2>Version</h2>
+        <div className="settings-card">
+          <div className="settings-row">
+            <span className="settings-label">Build</span>
+            <span className="mono">{__GIT_SHA__}</span>
+          </div>
+          <div className="settings-row version-message">
+            <span>{__GIT_MESSAGE__}</span>
+          </div>
+          <div className="settings-row">
+            <span className="settings-label">Date</span>
+            <span className="mono" style={{fontSize: '12px'}}>{__GIT_TIMESTAMP__}</span>
+          </div>
         </div>
       </div>
 
