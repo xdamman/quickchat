@@ -11,6 +11,7 @@ import { ContactList } from './components/ContactList'
 import { ChatView } from './components/ChatView'
 import { Settings } from './components/Settings'
 import { InstallBanner } from './components/InstallBanner'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 type Screen = 'contacts' | 'chat' | 'settings'
 
@@ -108,43 +109,45 @@ export function App({ config }: Props) {
 
   return (
     <div className="app" style={appStyle}>
-      <InstallBanner />
-      {/* Connection status indicator */}
-      {status !== 'connected' && (
-        <div className={`status-bar status-${status}`}>
-          {status === 'connecting' ? 'Connecting…' : 'Disconnected — reconnecting…'}
-        </div>
-      )}
+      <ErrorBoundary>
+        <InstallBanner />
+        {/* Connection status indicator */}
+        {status !== 'connected' && (
+          <div className={`status-bar status-${status}`}>
+            {status === 'connecting' ? 'Connecting…' : 'Disconnected — reconnecting…'}
+          </div>
+        )}
 
-      {screen === 'contacts' && (
-        <ContactList
-          contacts={visibleContacts}
-          onSelect={handleSelectContact}
-          onSettings={() => setScreen('settings')}
-        />
-      )}
+        {screen === 'contacts' && (
+          <ContactList
+            contacts={visibleContacts}
+            onSelect={handleSelectContact}
+            onSettings={() => setScreen('settings')}
+          />
+        )}
 
-      {screen === 'chat' && selectedContact && (
-        <ChatView
-          contact={selectedContact}
-          messages={messages}
-          config={config}
-          sending={sending}
-          relay={relay}
-          onSend={sendMessage}
-          onBack={handleBack}
-          singleContact={visibleContacts.length === 1}
-        />
-      )}
+        {screen === 'chat' && selectedContact && (
+          <ChatView
+            contact={selectedContact}
+            messages={messages}
+            config={config}
+            sending={sending}
+            relay={relay}
+            onSend={sendMessage}
+            onBack={handleBack}
+            singleContact={visibleContacts.length === 1}
+          />
+        )}
 
-      {screen === 'settings' && (
-        <Settings
-          publicKeyHex={identity.publicKeyHex}
-          displayName={identity.displayName}
-          onLogout={handleLogout}
-          onBack={handleBack}
-        />
-      )}
+        {screen === 'settings' && (
+          <Settings
+            publicKeyHex={identity.publicKeyHex}
+            displayName={identity.displayName}
+            onLogout={handleLogout}
+            onBack={handleBack}
+          />
+        )}
+      </ErrorBoundary>
     </div>
   )
 }

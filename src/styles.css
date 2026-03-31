@@ -339,6 +339,7 @@ html, body {
   padding: 16px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
   gap: 4px;
   min-height: 0;
 }
@@ -723,6 +724,69 @@ html, body {
   font-size: 16px;
   cursor: pointer;
   padding: 2px;
+}
+
+/* ========== CONTACT PROFILE MODAL ========== */
+.profile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.profile-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px 24px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 16px;
+}
+
+.profile-avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin: 0 auto 16px;
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.profile-description {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.profile-npub {
+  background: var(--gray-50);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  margin-bottom: 4px;
 }
 
 /* Desktop: center the app like a phone preview */
