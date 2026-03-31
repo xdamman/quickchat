@@ -1,0 +1,18 @@
+{
+  "relay": "wss://relay.xavierdamman.com",
+  "contacts": [
+    {
+      "npub": "npub1xsp9fcq340dzaqjctjl7unu3k0c82jdxc350uqym70k8vedzuvdst562dr",
+      "name": "Xavier",
+      "avatar": "",
+      "description": "Human"
+    }
+  ],
+  "rateLimits": {
+    "messagesPerDay": 50,
+    "messagesPerWeek": 200,
+    "messagesPerMonth": 500
+  },
+  "title": "Chat with Xavier",
+  "description": "Send me an encrypted message. No app needed."
+}
