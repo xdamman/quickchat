@@ -15,6 +15,8 @@ interface Props {
   onSend: (content: string) => Promise<void>
   onBack: () => void
   singleContact?: boolean
+  privateKey: Uint8Array | null
+  publicKeyHex: string | null
 }
 
 function formatTime(ts: number): string {
@@ -80,11 +82,13 @@ function ContactProfileModal({ contact, avatarUrl, onClose }: {
   )
 }
 
-export function ChatView({ contact, messages, config, sending, relay, onSend, onBack, singleContact }: Props) {
+export function ChatView({ contact, messages, config, sending, relay, onSend, onBack, singleContact, privateKey, publicKeyHex }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const chatViewRef = useRef<HTMLDivElement>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [showProfile, setShowProfile] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Fetch contact's kind:0 profile for avatar
   useEffect(() => {
@@ -109,9 +113,42 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
     }
   }, [relay, contact.npub, contact.avatar])
 
+  // Subscribe to typing indicators
+  useEffect(() => {
+    if (!relay || !publicKeyHex) return
+
+    const contactHex = npubToHex(contact.npub)
+    
+    const subId = relay.subscribe([{
+      kinds: [20003],
+      "#p": [publicKeyHex],
+      authors: [contactHex]
+    }], (event: any) => {
+      // Show typing indicator
+      setIsTyping(true)
+      
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+      
+      // Hide typing indicator after 6 seconds
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false)
+      }, 6000)
+    })
+
+    return () => {
+      relay.unsubscribe(subId)
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
+  }, [relay, publicKeyHex, contact.npub])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, isTyping])
 
   // Swipe-left to go back (only when multiple contacts)
   useEffect(() => {
@@ -208,10 +245,19 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
         <div ref={bottomRef} />
       </div>
 
+      {isTyping && (
+        <div className="typing-indicator">
+          {contact.name} is typing<span className="typing-dots"></span>
+        </div>
+      )}
+
       <ComposeBar
         config={config}
         onSend={onSend}
         sending={sending}
+        relay={relay}
+        privateKey={privateKey}
+        contactPubkeyHex={npubToHex(contact.npub)}
       />
 
       {showProfile && (
