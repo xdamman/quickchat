@@ -25,6 +25,7 @@ export function App({ config }: Props) {
   const { identity, loading, error, hasStoredCredential, login, register, logout } = useIdentity()
   const relayUrls = identity ? getRelayUrls(config) : null
   const { relay, status } = useRelay(relayUrls)
+  const keyboardHeight = useKeyboardHeight()
   const [screen, setScreen] = useState<Screen>('contacts')
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const kind0Published = useRef(false)
@@ -102,7 +103,6 @@ export function App({ config }: Props) {
     )
   }
 
-  const keyboardHeight = useKeyboardHeight()
   const appStyle = keyboardHeight > 0
     ? { height: `calc(100dvh - ${keyboardHeight}px)` } as React.CSSProperties
     : undefined
