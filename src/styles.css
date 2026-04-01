@@ -476,6 +476,11 @@ html, body {
   font-family: var(--font);
   outline: none;
   min-width: 0;
+  resize: none;
+  line-height: 1.4;
+  min-height: 40px;
+  max-height: 144px; /* 6 rows * 24px */
+  overflow-y: auto;
   /* Prevent iOS zoom on focus */
   -webkit-text-size-adjust: 100%;
 }
@@ -525,6 +530,30 @@ html, body {
 
 .rate-limit-msg span {
   font-size: 24px;
+}
+
+/* ========== TYPING INDICATOR ========== */
+.typing-indicator {
+  padding: 8px 20px;
+  color: var(--gray-400);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.typing-dots {
+  display: inline-block;
+}
+
+.typing-dots::after {
+  content: "...";
+  animation: typing-dots 1.4s infinite;
+}
+
+@keyframes typing-dots {
+  0%, 20% { content: ""; }
+  40% { content: "."; }
+  60% { content: ".."; }
+  80%, 100% { content: "..."; }
 }
 
 /* ========== SETTINGS ========== */

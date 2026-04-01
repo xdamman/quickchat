@@ -136,6 +136,8 @@ export function App({ config }: Props) {
             onSend={sendMessage}
             onBack={handleBack}
             singleContact={visibleContacts.length === 1}
+            privateKey={identity.privateKey}
+            publicKeyHex={identity.publicKeyHex}
           />
         )}
 
