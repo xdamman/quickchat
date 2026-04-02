@@ -126,7 +126,7 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
     const cached = getCachedProfile(contactHex)
     if (cached?.picture) {
       setAvatarUrl(cached.picture)
-    } else if (contact.avatar) {
+    } else if (contact.avatar && !isEmojiAvatar(contact.avatar)) {
       setAvatarUrl(contact.avatar)
     }
 
