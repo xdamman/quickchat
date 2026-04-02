@@ -223,6 +223,11 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
     <div className="chat-view" ref={chatViewRef}>
       <div className="chat-header">
         {!singleContact && <button className="btn-back" onClick={onBack}>←</button>}
+        {isEmojiAvatar(contact.avatar) && (
+          <span className="chat-header-emoji" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
+            {contact.avatar}
+          </span>
+        )}
         <span className="chat-contact-name" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
           {contact.name}
         </span>

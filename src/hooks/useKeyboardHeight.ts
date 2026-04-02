@@ -1,22 +1,29 @@
 import { useState, useEffect } from 'react'
 
 /**
- * Detect iOS virtual keyboard by comparing visualViewport height
- * to window.innerHeight. Returns the keyboard height in pixels.
- * On non-iOS or when keyboard is hidden, returns 0.
+ * Returns the visible viewport height, accounting for virtual keyboards
+ * on both iOS and Android. Uses visualViewport API which works cross-platform.
+ * Returns null when no adjustment is needed (keyboard hidden).
  */
 export function useKeyboardHeight() {
-  const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null)
 
   useEffect(() => {
     const vv = window.visualViewport
     if (!vv) return
 
     const update = () => {
-      // visualViewport.height shrinks when keyboard is visible
-      // The difference is the keyboard height
+      // On Android Chrome, window.innerHeight doesn't change when keyboard opens,
+      // but visualViewport.height does. On iOS, both change but at different times.
+      // Using visualViewport.height directly is the most reliable approach.
       const kbHeight = Math.max(0, Math.round(window.innerHeight - vv.height))
-      setKeyboardHeight(kbHeight)
+      
+      if (kbHeight > 50) {
+        // Keyboard is visible — use visualViewport height
+        setViewportHeight(Math.round(vv.height))
+      } else {
+        setViewportHeight(null)
+      }
     }
 
     vv.addEventListener('resize', update)
@@ -28,5 +35,5 @@ export function useKeyboardHeight() {
     }
   }, [])
 
-  return keyboardHeight
+  return viewportHeight
 }

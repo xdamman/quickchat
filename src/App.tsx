@@ -102,8 +102,9 @@ export function App({ config }: Props) {
     )
   }
 
-  const appStyle = keyboardHeight > 0
-    ? { height: `calc(100dvh - ${keyboardHeight}px)` } as React.CSSProperties
+  // keyboardHeight is the visible viewport height when keyboard is open, null otherwise
+  const appStyle = keyboardHeight
+    ? { height: `${keyboardHeight}px` } as React.CSSProperties
     : undefined
 
   return (
