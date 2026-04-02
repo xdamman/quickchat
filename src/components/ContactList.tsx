@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { type Contact } from '../config'
 import { getLastMessage, type StoredMessage } from '../lib/storage'
 import { npubToHex } from '../lib/nip19'
@@ -35,6 +35,16 @@ export function ContactList({ contacts, onSelect, onSettings, typingSet }: Props
     })
   }, [contacts])
 
+  const sortedContacts = useMemo(() => {
+    return [...contacts].sort((a, b) => {
+      const msgA = lastMessages.get(npubToHex(a.npub))
+      const msgB = lastMessages.get(npubToHex(b.npub))
+      const tsA = msgA?.createdAt ?? 0
+      const tsB = msgB?.createdAt ?? 0
+      return tsB - tsA // newest first
+    })
+  }, [contacts, lastMessages])
+
   return (
     <div className="contact-list">
       <div className="header">
@@ -43,7 +53,7 @@ export function ContactList({ contacts, onSelect, onSettings, typingSet }: Props
       </div>
       <h2>Messages</h2>
       <div className="contacts">
-        {contacts.map(contact => {
+        {sortedContacts.map(contact => {
           const hex = npubToHex(contact.npub)
           const lastMsg = lastMessages.get(hex)
           const isTyping = typingSet.has(hex)
