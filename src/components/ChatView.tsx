@@ -19,6 +19,19 @@ function MarkdownContent({ content }: { content: string }) {
   return <div className="bubble-content markdown-body" dangerouslySetInnerHTML={{ __html: html }} />
 }
 
+function isEmojiAvatar(avatar: string | undefined): boolean {
+  if (!avatar) return false
+  return !avatar.startsWith('http') && !avatar.startsWith('/')
+}
+
+function EmojiAvatar({ emoji, size = 32 }: { emoji: string; size?: number }) {
+  return (
+    <div className="chat-avatar-emoji" style={{ width: size, height: size, fontSize: size * 0.7 }}>
+      {emoji}
+    </div>
+  )
+}
+
 interface Props {
   contact: Contact
   messages: StoredMessage[]
@@ -75,6 +88,8 @@ function ContactProfileModal({ contact, avatarUrl, onClose }: {
       <div className="profile-modal" onClick={e => e.stopPropagation()}>
         {avatarUrl ? (
           <img className="profile-avatar" src={avatarUrl} alt="" />
+        ) : isEmojiAvatar(contact.avatar) ? (
+          <div className="profile-avatar-emoji-large">{contact.avatar}</div>
         ) : (
           <div className="profile-avatar-placeholder">{contact.name[0]}</div>
         )}
@@ -237,6 +252,8 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
                   <div className="chat-avatar-slot">
                     {isFirstInGroup && avatarUrl ? (
                       <img className="chat-avatar-img" src={avatarUrl} alt="" />
+                    ) : isFirstInGroup && isEmojiAvatar(contact.avatar) ? (
+                      <EmojiAvatar emoji={contact.avatar!} />
                     ) : isFirstInGroup ? (
                       <div className="chat-avatar-placeholder">{contact.name[0]}</div>
                     ) : (

@@ -48,7 +48,9 @@ export function ContactList({ contacts, onSelect, onSettings }: Props) {
           return (
             <button key={contact.npub} className="contact-row" onClick={() => onSelect(contact)}>
               <div className="contact-avatar">
-                {contact.avatar ? (
+                {contact.avatar && !contact.avatar.startsWith('http') && !contact.avatar.startsWith('/') ? (
+                  <span className="avatar-emoji">{contact.avatar}</span>
+                ) : contact.avatar ? (
                   <img src={contact.avatar} alt="" />
                 ) : (
                   <span className="avatar-placeholder">{contact.name[0]}</span>

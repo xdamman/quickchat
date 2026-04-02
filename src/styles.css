@@ -305,6 +305,11 @@ html, body {
   color: var(--gray-500);
 }
 
+.avatar-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
 .contact-info {
   flex: 1;
   min-width: 0;
@@ -436,6 +441,15 @@ html, body {
   font-size: 14px;
   font-weight: 600;
   color: var(--gray-500);
+}
+
+.chat-avatar-emoji {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .chat-avatar-spacer {
@@ -861,6 +875,17 @@ html, body {
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 16px;
+}
+
+.profile-avatar-emoji-large {
+  font-size: 64px;
+  line-height: 1;
+  margin: 0 auto 16px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .profile-avatar-placeholder {
