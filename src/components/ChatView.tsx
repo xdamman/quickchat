@@ -1,10 +1,23 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { type Contact, type AppConfig } from '../config'
 import { type StoredMessage } from '../lib/storage'
 import { type RelayConnection } from '../lib/nostr'
 import { fetchProfile, getCachedProfile, type NostrProfile } from '../lib/profile'
 import { npubToHex, hexToNpub } from '../lib/nip19'
 import { ComposeBar } from './ComposeBar'
+import { marked } from 'marked'
+
+// Configure marked for chat messages
+marked.setOptions({ breaks: true, gfm: true })
+
+function renderMarkdown(content: string): string {
+  return marked.parse(content, { async: false }) as string
+}
+
+function MarkdownContent({ content }: { content: string }) {
+  const html = useMemo(() => renderMarkdown(content), [content])
+  return <div className="bubble-content markdown-body" dangerouslySetInnerHTML={{ __html: html }} />
+}
 
 interface Props {
   contact: Contact
@@ -232,7 +245,7 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
                   </div>
                 )}
                 <div className={`chat-bubble ${msg.isMine ? 'mine' : 'theirs'}`}>
-                  <div className="bubble-content">{msg.content}</div>
+                  <MarkdownContent content={msg.content} />
                   <div className="bubble-meta">
                     <span className="bubble-time">{formatTime(msg.createdAt)}</span>
                     {msg.isMine && <DeliveryTicks status={msg.deliveryStatus} />}

@@ -10,7 +10,6 @@ import { Onboarding } from './components/Onboarding'
 import { ContactList } from './components/ContactList'
 import { ChatView } from './components/ChatView'
 import { Settings } from './components/Settings'
-import { InstallBanner } from './components/InstallBanner'
 import { ErrorBoundary } from './components/ErrorBoundary'
 
 type Screen = 'contacts' | 'chat' | 'settings'
@@ -110,7 +109,6 @@ export function App({ config }: Props) {
   return (
     <div className="app" style={appStyle}>
       <ErrorBoundary>
-        <InstallBanner />
         {/* Connection status indicator */}
         {status !== 'connected' && (
           <div className={`status-bar status-${status}`}>

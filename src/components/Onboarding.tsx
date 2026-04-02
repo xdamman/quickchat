@@ -1,13 +1,50 @@
 import { useState, useEffect } from 'react'
 import { type AppConfig } from '../config'
+import { isStandalone } from '../lib/passkey'
 
 type OnboardingStep = 'landing' | 'ask-name'
+
+type BrowserType = 'ios-safari' | 'ios-chrome' | 'android-chrome' | 'android-other' | null
+
+function detectBrowser(): BrowserType {
+  const ua = navigator.userAgent
+  const isIOS = /iPhone|iPad|iPod/.test(ua)
+  const isAndroid = /Android/.test(ua)
+  if (isIOS) {
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS/.test(ua)
+    return isSafari ? 'ios-safari' : 'ios-chrome'
+  }
+  if (isAndroid) {
+    const isChrome = /Chrome/.test(ua) && !/OPR|Edge|Edg/.test(ua)
+    return isChrome ? 'android-chrome' : 'android-other'
+  }
+  return null
+}
+
+function getInstallMessage(browser: BrowserType): string {
+  switch (browser) {
+    case 'ios-safari':
+      return 'Tap the Share button ⬆️ then "Add to Home Screen" to install'
+    case 'ios-chrome':
+      return 'Open in Safari, then tap Share → "Add to Home Screen"'
+    case 'android-chrome':
+      return 'Tap the menu (⋮) then "Add to Home Screen"'
+    case 'android-other':
+      return 'Open in Chrome, then tap menu → "Add to Home Screen"'
+    default:
+      return 'Add to Home Screen to install as an app'
+  }
+}
+
+function isMobile(): boolean {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+}
 
 interface Props {
   config: AppConfig
   hasStoredCredential: boolean
-  onRegister: (name: string) => Promise<void>
-  onLogin: () => Promise<void>
+  onRegister: (name: string, trustDevice?: boolean) => Promise<void>
+  onLogin: (trustDevice?: boolean) => Promise<void>
   error: string | null
   loading: boolean
 }
@@ -15,32 +52,49 @@ interface Props {
 export function Onboarding({ config, hasStoredCredential, onRegister, onLogin, error, loading }: Props) {
   const [step, setStep] = useState<OnboardingStep>('landing')
   const [name, setName] = useState('')
-  const [isNewUser, setIsNewUser] = useState(false)
+  const [trustDevice, setTrustDevice] = useState(true)
+  const [installed, setInstalled] = useState(false)
+  const [showMobile, setShowMobile] = useState(false)
+  const [browser, setBrowser] = useState<BrowserType>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
-  // If returning user has stored credential, auto-show unlock
   useEffect(() => {
-    // Nothing to do here — landing page handles both cases
-  }, [hasStoredCredential])
+    const standalone = isStandalone()
+    setInstalled(standalone)
+    setShowMobile(!standalone && isMobile())
+    if (!standalone) setBrowser(detectBrowser())
 
-  const handleNewIdentity = async () => {
-    // First create the passkey with a temporary name, then ask for display name
-    setIsNewUser(true)
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleNewIdentity = () => {
     setStep('ask-name')
   }
 
   const handleUnlock = async () => {
-    await onLogin()
-    // After login, useIdentity will check if displayName exists
-    // If the passkey stored credential has a displayName, we're good
+    await onLogin(installed ? trustDevice : false)
   }
 
   const handleNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    await onRegister(name.trim())
+    await onRegister(name.trim(), installed ? trustDevice : false)
   }
 
-  // Step: ask for display name (after passkey creation or if returning user has no name)
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt()
+      await deferredPrompt.userChoice
+      setDeferredPrompt(null)
+    }
+  }
+
+  // Step: ask for display name
   if (step === 'ask-name') {
     return (
       <div className="onboarding">
@@ -59,6 +113,18 @@ export function Onboarding({ config, hasStoredCredential, onRegister, onLogin, e
               autoFocus
               maxLength={30}
             />
+
+            {installed && (
+              <label className="trust-checkbox">
+                <input
+                  type="checkbox"
+                  checked={trustDevice}
+                  onChange={e => setTrustDevice(e.target.checked)}
+                />
+                <span>Trust this device <span className="trust-hint">(stay signed in for 1 week)</span></span>
+              </label>
+            )}
+
             <button type="submit" className="btn-primary" disabled={loading || !name.trim()}>
               {loading ? 'Creating identity…' : 'Continue →'}
             </button>
@@ -70,13 +136,24 @@ export function Onboarding({ config, hasStoredCredential, onRegister, onLogin, e
     )
   }
 
-  // Landing page with two options
+  // Landing page
   return (
     <div className="onboarding">
       <div className="onboarding-content">
         <div className="onboarding-icon">💬</div>
         <h1>{config.title}</h1>
         <p className="onboarding-desc">{config.description}</p>
+
+        {installed && (
+          <label className="trust-checkbox">
+            <input
+              type="checkbox"
+              checked={trustDevice}
+              onChange={e => setTrustDevice(e.target.checked)}
+            />
+            <span>Trust this device <span className="trust-hint">(stay signed in for 1 week)</span></span>
+          </label>
+        )}
 
         <div className="onboarding-actions">
           {hasStoredCredential ? (
@@ -117,6 +194,19 @@ export function Onboarding({ config, hasStoredCredential, onRegister, onLogin, e
         </div>
 
         {error && <p className="error-msg">{error}</p>}
+
+        {showMobile && (
+          <div className="install-prompt-onboarding">
+            <p className="install-prompt-text">
+              📱 {deferredPrompt ? 'Install the app for the best experience' : getInstallMessage(browser)}
+            </p>
+            {deferredPrompt && (
+              <button className="btn-secondary install-prompt-btn" onClick={handleInstall}>
+                Install App
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="onboarding-footer">
           <p>🔒 Your messages are end-to-end encrypted.<br />No account needed. Powered by Nostr.</p>

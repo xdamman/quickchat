@@ -5,6 +5,9 @@ import { bytesToHex } from '@noble/hashes/utils'
 const PRF_SALT = sha256(new TextEncoder().encode('quickchat:nostr:v1'))
 const STORAGE_KEY = 'quickchat:credential'
 const ENCRYPTED_KEY_STORAGE = 'quickchat:encrypted_nsec'
+const TRUSTED_NSEC_KEY = 'quickchat:trusted_nsec'
+const TRUSTED_NSEC_EXPIRY_KEY = 'quickchat:trusted_nsec_expiry'
+const TRUST_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 1 week
 
 interface StoredCredential {
   credentialId: string
@@ -26,6 +29,36 @@ function storeCredential(cred: StoredCredential): void {
 export function clearCredential(): void {
   localStorage.removeItem(STORAGE_KEY)
   localStorage.removeItem(ENCRYPTED_KEY_STORAGE)
+  localStorage.removeItem(TRUSTED_NSEC_KEY)
+  localStorage.removeItem(TRUSTED_NSEC_EXPIRY_KEY)
+}
+
+export function storeTrustedNsec(privateKey: Uint8Array): void {
+  localStorage.setItem(TRUSTED_NSEC_KEY, bytesToHex(privateKey))
+  localStorage.setItem(TRUSTED_NSEC_EXPIRY_KEY, String(Date.now() + TRUST_TTL_MS))
+}
+
+export function getTrustedNsec(): Uint8Array | null {
+  const hex = localStorage.getItem(TRUSTED_NSEC_KEY)
+  const expiry = localStorage.getItem(TRUSTED_NSEC_EXPIRY_KEY)
+  if (!hex || !expiry) return null
+  if (Date.now() > Number(expiry)) {
+    localStorage.removeItem(TRUSTED_NSEC_KEY)
+    localStorage.removeItem(TRUSTED_NSEC_EXPIRY_KEY)
+    return null
+  }
+  const bytes = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16)
+  }
+  return bytes
+}
+
+export function isStandalone(): boolean {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as any).standalone === true
+  )
 }
 
 function toBase64Url(buffer: ArrayBuffer): string {
