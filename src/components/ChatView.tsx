@@ -205,7 +205,12 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
         <span className="chat-lock">🔒</span>
       </div>
 
-      <div className="chat-messages">
+      <div className="chat-messages" onTouchMove={() => {
+        // Dismiss keyboard when scrolling messages
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur()
+        }
+      }}>
         {messages.length === 0 && (
           <div className="chat-empty">
             <p>No messages yet. Say hi!</p>

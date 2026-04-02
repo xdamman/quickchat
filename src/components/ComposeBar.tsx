@@ -24,7 +24,16 @@ export function ComposeBar({ config, onSend, sending, relay, privateKey, contact
 
   // Sync from draft prop when contact changes
   useEffect(() => {
-    setText(draft || '')
+    const newText = draft || ''
+    setText(newText)
+    // Place cursor at end of draft
+    const textarea = textareaRef.current
+    if (textarea && newText) {
+      requestAnimationFrame(() => {
+        textarea.selectionStart = newText.length
+        textarea.selectionEnd = newText.length
+      })
+    }
   }, [draft, contactPubkeyHex])
 
   // Auto-resize textarea
