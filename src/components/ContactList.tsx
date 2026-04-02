@@ -7,6 +7,7 @@ interface Props {
   contacts: Contact[]
   onSelect: (contact: Contact) => void
   onSettings: () => void
+  typingSet: Set<string>
 }
 
 function timeAgo(ts: number): string {
@@ -17,7 +18,7 @@ function timeAgo(ts: number): string {
   return `${Math.floor(diff / 86400)}d ago`
 }
 
-export function ContactList({ contacts, onSelect, onSettings }: Props) {
+export function ContactList({ contacts, onSelect, onSettings, typingSet }: Props) {
   const [lastMessages, setLastMessages] = useState<Map<string, StoredMessage>>(new Map())
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export function ContactList({ contacts, onSelect, onSettings }: Props) {
         {contacts.map(contact => {
           const hex = npubToHex(contact.npub)
           const lastMsg = lastMessages.get(hex)
+          const isTyping = typingSet.has(hex)
           return (
             <button key={contact.npub} className="contact-row" onClick={() => onSelect(contact)}>
               <div className="contact-avatar">
@@ -58,14 +60,16 @@ export function ContactList({ contacts, onSelect, onSettings }: Props) {
               </div>
               <div className="contact-info">
                 <div className="contact-name">{contact.name}</div>
-                <div className="contact-preview">
-                  {lastMsg
-                    ? (lastMsg.isMine ? 'You: ' : '') + lastMsg.content.slice(0, 50)
-                    : contact.description || 'No messages yet'
+                <div className={`contact-preview ${isTyping ? 'contact-typing' : ''}`}>
+                  {isTyping
+                    ? <span>typing<span className="typing-dots-inline"></span></span>
+                    : lastMsg
+                      ? (lastMsg.isMine ? 'You: ' : '') + lastMsg.content.slice(0, 50)
+                      : contact.description || 'No messages yet'
                   }
                 </div>
               </div>
-              {lastMsg && <div className="contact-time">{timeAgo(lastMsg.createdAt)}</div>}
+              {lastMsg && !isTyping && <div className="contact-time">{timeAgo(lastMsg.createdAt)}</div>}
             </button>
           )
         })}

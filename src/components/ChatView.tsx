@@ -43,6 +43,9 @@ interface Props {
   singleContact?: boolean
   privateKey: Uint8Array | null
   publicKeyHex: string | null
+  typingSet: Set<string>
+  draft?: string
+  onDraftChange?: (text: string) => void
 }
 
 function formatTime(ts: number): string {
@@ -110,13 +113,13 @@ function ContactProfileModal({ contact, avatarUrl, onClose }: {
   )
 }
 
-export function ChatView({ contact, messages, config, sending, relay, onSend, onBack, singleContact, privateKey, publicKeyHex }: Props) {
+export function ChatView({ contact, messages, config, sending, relay, onSend, onBack, singleContact, privateKey, publicKeyHex, typingSet, draft, onDraftChange }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const chatViewRef = useRef<HTMLDivElement>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [showProfile, setShowProfile] = useState(false)
-  const [isTyping, setIsTyping] = useState(false)
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const contactHexForTyping = npubToHex(contact.npub)
+  const isTyping = typingSet.has(contactHexForTyping)
 
   // Fetch contact's kind:0 profile for avatar
   useEffect(() => {
@@ -141,38 +144,6 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
     }
   }, [relay, contact.npub, contact.avatar])
 
-  // Subscribe to typing indicators
-  useEffect(() => {
-    if (!relay || !publicKeyHex) return
-
-    const contactHex = npubToHex(contact.npub)
-    
-    const subId = relay.subscribe([{
-      kinds: [20003],
-      "#p": [publicKeyHex],
-      authors: [contactHex]
-    }], (event: any) => {
-      // Show typing indicator
-      setIsTyping(true)
-      
-      // Clear existing timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-      
-      // Hide typing indicator after 6 seconds
-      typingTimeoutRef.current = setTimeout(() => {
-        setIsTyping(false)
-      }, 6000)
-    })
-
-    return () => {
-      relay.unsubscribe(subId)
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current)
-      }
-    }
-  }, [relay, publicKeyHex, contact.npub])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -293,6 +264,8 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
         relay={relay}
         privateKey={privateKey}
         contactPubkeyHex={npubToHex(contact.npub)}
+        draft={draft}
+        onDraftChange={onDraftChange}
       />
 
       {showProfile && (

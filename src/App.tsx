@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { type AppConfig, type Contact, getRelayUrls, getVisibleContacts } from './config'
 import { useIdentity } from './hooks/useIdentity'
 import { useRelay } from './hooks/useRelay'
 import { useMessages } from './hooks/useMessages'
 import { useKeyboardHeight } from './hooks/useKeyboardHeight'
+import { useTypingIndicators } from './hooks/useTypingIndicators'
+import { useDrafts } from './hooks/useDrafts'
 import { npubToHex, hexToNpub } from './lib/nip19'
 import { publishKind0 } from './lib/profile'
 import { Onboarding } from './components/Onboarding'
@@ -25,6 +27,7 @@ export function App({ config }: Props) {
   const relayUrls = identity ? getRelayUrls(config) : null
   const { relay, status } = useRelay(relayUrls)
   const keyboardHeight = useKeyboardHeight()
+  const { getDraft, setDraft, clearDraft } = useDrafts()
   const [screen, setScreen] = useState<Screen>('contacts')
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const kind0Published = useRef(false)
@@ -32,6 +35,13 @@ export function App({ config }: Props) {
   // Determine visible contacts based on whitelist
   const userNpub = identity ? hexToNpub(identity.publicKeyHex) : ''
   const visibleContacts = identity ? getVisibleContacts(config, userNpub) : config.contacts
+
+  // Collect all contact hex pubkeys for typing indicator subscription
+  const contactHexes = useMemo(
+    () => visibleContacts.map(c => npubToHex(c.npub)),
+    [visibleContacts]
+  )
+  const typingSet = useTypingIndicators(relay, identity?.publicKeyHex ?? null, contactHexes)
 
   // Auto-select if only one contact
   const autoSelected = useRef(false)
@@ -72,10 +82,7 @@ export function App({ config }: Props) {
   }, [])
 
   const handleBack = useCallback(() => {
-    if (visibleContacts.length === 1) {
-      // Can't go back to contact list if there's only one contact
-      return
-    }
+    if (visibleContacts.length === 1) return
     setScreen('contacts')
     setSelectedContact(null)
   }, [visibleContacts.length])
@@ -87,6 +94,12 @@ export function App({ config }: Props) {
     setScreen('contacts')
     setSelectedContact(null)
   }, [logout])
+
+  // Wrap sendMessage to clear draft on send
+  const handleSend = useCallback(async (content: string) => {
+    if (contactHex) clearDraft(contactHex)
+    await sendMessage(content)
+  }, [sendMessage, contactHex, clearDraft])
 
   // Not authenticated yet
   if (!identity) {
@@ -122,6 +135,7 @@ export function App({ config }: Props) {
             contacts={visibleContacts}
             onSelect={handleSelectContact}
             onSettings={() => setScreen('settings')}
+            typingSet={typingSet}
           />
         )}
 
@@ -132,11 +146,14 @@ export function App({ config }: Props) {
             config={config}
             sending={sending}
             relay={relay}
-            onSend={sendMessage}
+            onSend={handleSend}
             onBack={handleBack}
             singleContact={visibleContacts.length === 1}
             privateKey={identity.privateKey}
             publicKeyHex={identity.publicKeyHex}
+            typingSet={typingSet}
+            draft={contactHex ? getDraft(contactHex) : ''}
+            onDraftChange={contactHex ? (text: string) => setDraft(contactHex, text) : undefined}
           />
         )}
 

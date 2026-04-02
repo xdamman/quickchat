@@ -11,25 +11,28 @@ interface Props {
   relay: RelayConnection | null
   privateKey: Uint8Array | null
   contactPubkeyHex: string | null
+  draft?: string
+  onDraftChange?: (text: string) => void
 }
 
-export function ComposeBar({ config, onSend, sending, relay, privateKey, contactPubkeyHex }: Props) {
-  const [text, setText] = useState('')
+export function ComposeBar({ config, onSend, sending, relay, privateKey, contactPubkeyHex, draft, onDraftChange }: Props) {
+  const [text, setText] = useState(draft || '')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastTypingRef = useRef<number>(0)
   const rateLimit = checkRateLimit(config.rateLimits)
 
+  // Sync from draft prop when contact changes
+  useEffect(() => {
+    setText(draft || '')
+  }, [draft, contactPubkeyHex])
+
   // Auto-resize textarea
   useEffect(() => {
     const textarea = textareaRef.current
     if (!textarea) return
-    
-    // Reset height to shrink if needed
     textarea.style.height = 'auto'
-    
-    // Calculate new height with max of 6 rows (approximately 24px per row)
-    const maxHeight = 24 * 6 // 6 rows
+    const maxHeight = 24 * 6
     const newHeight = Math.min(textarea.scrollHeight, maxHeight)
     textarea.style.height = `${newHeight}px`
   }, [text])
@@ -56,30 +59,26 @@ export function ComposeBar({ config, onSend, sending, relay, privateKey, contact
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value
     setText(newText)
+    onDraftChange?.(newText)
     
-    // Handle typing indicators
     const now = Date.now()
     const isFirstType = lastTypingRef.current === 0 || (now - lastTypingRef.current) > 5000
     
     if (isFirstType && newText.length > 0) {
-      // Send immediately on first type or after 5+ seconds
       sendTypingIndicator()
       lastTypingRef.current = now
     }
     
-    // Clear existing timer
     if (typingTimerRef.current) {
       clearTimeout(typingTimerRef.current)
     }
     
     if (newText.length > 0) {
-      // Send typing indicator every 5 seconds while typing
       typingTimerRef.current = setTimeout(() => {
         sendTypingIndicator()
         lastTypingRef.current = Date.now()
       }, 5000)
     } else {
-      // Reset when text is empty
       lastTypingRef.current = 0
     }
   }
@@ -95,7 +94,6 @@ export function ComposeBar({ config, onSend, sending, relay, privateKey, contact
     e.preventDefault()
     if (!text.trim() || !rateLimit.canSend || sending) return
     
-    // Clear typing timer and reset state
     if (typingTimerRef.current) {
       clearTimeout(typingTimerRef.current)
       typingTimerRef.current = null
@@ -104,10 +102,10 @@ export function ComposeBar({ config, onSend, sending, relay, privateKey, contact
     
     const msg = text.trim()
     setText('')
+    onDraftChange?.('')
     await onSend(msg)
   }
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (typingTimerRef.current) {

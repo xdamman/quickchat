@@ -654,6 +654,16 @@ html, body {
   80%, 100% { content: "..."; }
 }
 
+.contact-typing {
+  color: var(--blue);
+  font-style: italic;
+}
+
+.typing-dots-inline::after {
+  content: "...";
+  animation: typing-dots 1.4s infinite;
+}
+
 /* ========== SETTINGS ========== */
 .settings {
   height: 100%;
