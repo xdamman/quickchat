@@ -537,6 +537,8 @@ html, body {
   min-height: 40px;
   max-height: 144px; /* 6 rows * 24px */
   overflow-y: auto;
+  background: var(--bg-input, #fff);
+  color: var(--gray-900);
   /* Prevent iOS zoom on focus */
   -webkit-text-size-adjust: 100%;
 }
