@@ -6,6 +6,7 @@ import { useMessages } from './hooks/useMessages'
 import { useKeyboardHeight } from './hooks/useKeyboardHeight'
 import { useTypingIndicators } from './hooks/useTypingIndicators'
 import { useDrafts } from './hooks/useDrafts'
+import { useTheme } from './hooks/useTheme'
 import { npubToHex, hexToNpub } from './lib/nip19'
 import { publishKind0 } from './lib/profile'
 import { Onboarding } from './components/Onboarding'
@@ -27,6 +28,7 @@ export function App({ config }: Props) {
   const relayUrls = identity ? getRelayUrls(config) : null
   const { relay, status } = useRelay(relayUrls)
   const keyboardHeight = useKeyboardHeight()
+  const { theme, setTheme } = useTheme()
   const { getDraft, setDraft, clearDraft } = useDrafts()
   const [screen, setScreen] = useState<Screen>('contacts')
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
@@ -161,6 +163,8 @@ export function App({ config }: Props) {
           <Settings
             publicKeyHex={identity.publicKeyHex}
             displayName={identity.displayName}
+            theme={theme}
+            onThemeChange={setTheme}
             onLogout={handleLogout}
             onBack={handleBack}
           />

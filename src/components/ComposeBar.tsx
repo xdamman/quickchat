@@ -23,16 +23,22 @@ export function ComposeBar({ config, onSend, sending, relay, privateKey, contact
   const rateLimit = checkRateLimit(config.rateLimits)
 
   // Sync from draft prop when contact changes
+  const lastContactRef = useRef<string | null>(null)
+
   useEffect(() => {
-    const newText = draft || ''
-    setText(newText)
-    // Place cursor at end of draft
-    const textarea = textareaRef.current
-    if (textarea && newText) {
-      requestAnimationFrame(() => {
-        textarea.selectionStart = newText.length
-        textarea.selectionEnd = newText.length
-      })
+    if (contactPubkeyHex !== lastContactRef.current) {
+      const newText = draft || ''
+      setText(newText)
+      lastContactRef.current = contactPubkeyHex
+      
+      // Place cursor at end of draft
+      const textarea = textareaRef.current
+      if (textarea && newText) {
+        requestAnimationFrame(() => {
+          textarea.selectionStart = newText.length
+          textarea.selectionEnd = newText.length
+        })
+      }
     }
   }, [draft, contactPubkeyHex])
 

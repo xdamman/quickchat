@@ -5,14 +5,18 @@ declare const __GIT_SHA__: string
 declare const __GIT_MESSAGE__: string
 declare const __GIT_TIMESTAMP__: string
 
+import { type ThemeMode } from '../hooks/useTheme'
+
 interface Props {
   publicKeyHex: string
   displayName: string
+  theme: ThemeMode
+  onThemeChange: (theme: ThemeMode) => void
   onLogout: () => void
   onBack: () => void
 }
 
-export function Settings({ publicKeyHex, displayName, onLogout, onBack }: Props) {
+export function Settings({ publicKeyHex, displayName, theme, onThemeChange, onLogout, onBack }: Props) {
   const npub = hexToNpub(publicKeyHex)
   const [copied, setCopied] = useState(false)
 
@@ -45,6 +49,31 @@ export function Settings({ publicKeyHex, displayName, onLogout, onBack }: Props)
               <span className="npub-copy-icon">{copied ? '✓' : '📋'}</span>
               {copied && <span className="npub-copied-text">Copied!</span>}
             </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="settings-section">
+        <h2>Appearance</h2>
+        <div className="settings-card">
+          <div className="settings-row">
+            <span className="settings-label">Theme</span>
+            <select 
+              value={theme} 
+              onChange={(e) => onThemeChange(e.target.value as ThemeMode)}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '6px',
+                border: '1px solid var(--gray-300)',
+                background: 'var(--bg-input)',
+                color: 'var(--text-main)',
+                fontSize: '14px'
+              }}
+            >
+              <option value="system">System Default</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
           </div>
         </div>
       </div>
