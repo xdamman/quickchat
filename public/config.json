@@ -9,7 +9,7 @@
     {
       "npub": "npub1xsp9fcq340dzaqjctjl7unu3k0c82jdxc350uqym70k8vedzuvdst562dr",
       "name": "Xavier",
-      "avatar": "",
+      "avatar": "\ud83d\udc68\u200d\ud83d\udcbb",
       "description": "Human",
       "protocol": "nip04"
     }
@@ -18,70 +18,70 @@
     {
       "npub": "npub1lumcvfl8lkjquyvdjhlme4qvxhlcu0pujvfajhpmu94llwz4wesqhtld68",
       "name": "xbot",
-      "avatar": "",
+      "avatar": "\ud83e\udd16",
       "description": "Dev companion",
       "protocol": "nip04"
     },
     {
       "npub": "npub1xjs2tvh45ee9cnwpmeefp0ap4fjfh37w0z3hnpnqk8r2myr0fq7qpszncv",
       "name": "xbot-coder",
-      "avatar": "",
+      "avatar": "\ud83d\udee0\ufe0f",
       "description": "Coding agent",
       "protocol": "nip04"
     },
     {
       "npub": "npub12lgcf7f8c8rwjyw0s8kkgyjuh06l6py7v0fh754a5ea20yqlu07stly8cp",
       "name": "xbot-devops",
-      "avatar": "",
+      "avatar": "\ud83d\udd27",
       "description": "Infrastructure agent",
       "protocol": "nip04"
     },
     {
       "npub": "npub1w53wsa9n2z4x9tzgckk36wsueny7svdjp400snnwhkhxjekprtlqly6my4",
       "name": "xbot-test",
-      "avatar": "",
+      "avatar": "\ud83e\uddea",
       "description": "Test agent",
       "protocol": "nip04"
     },
     {
       "npub": "npub1fs46tlcmjvlyelrulst4ker58mua93wwqtrqfae770khgmupm7csu0stuv",
       "name": "xbot-presenter",
-      "avatar": "",
+      "avatar": "\ud83c\udfac",
       "description": "Presenter agent",
       "protocol": "nip04"
     },
     {
       "npub": "npub1p3pfd7ved5l3uj4ldg207ggp6p4h2qde0lg9d84t45fmgh6r8xqs9jq2mx",
       "name": "chb-cli",
-      "avatar": "",
+      "avatar": "\ud83d\udcbb",
       "description": "CommonsHub CLI",
       "protocol": "nip04"
     },
     {
       "npub": "npub1354dhl5vsde9nxmecdk06npkh89w3n4838d4skfetacucpscm32swhzdnv",
       "name": "chb-api",
-      "avatar": "",
+      "avatar": "\ud83c\udf10",
       "description": "CommonsHub API",
       "protocol": "nip04"
     },
     {
       "npub": "npub1nclgeehz6t5nm7dced8kw7f2x3pv0899u6nt6ldyj45hx0ttle2qjmap54",
       "name": "xbot-nostr",
-      "avatar": "",
+      "avatar": "\u26a1",
       "description": "Nostr specialist",
       "protocol": "nip04"
     },
     {
       "npub": "npub1zrwk9ed86038pczm7p8hv64n0vm6uv6sjreu7n4t44re2xn05pusjw5sra",
       "name": "xbot-writer",
-      "avatar": "",
+      "avatar": "\u270d\ufe0f",
       "description": "Writer agent",
       "protocol": "nip04"
     },
     {
       "npub": "npub1fz6g6rgk5qhtshc8rpdthsx3crrt9vm3akf520dnq9dl9ltnshlqtvull6",
       "name": "xbot-openletter",
-      "avatar": "",
+      "avatar": "\ud83d\udcdc",
       "description": "Open Letter agent",
       "protocol": "nip04"
     }
