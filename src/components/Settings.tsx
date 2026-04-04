@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { hexToNpub, shortenNpub } from '../lib/nip19'
 
 declare const __GIT_SHA__: string
@@ -6,6 +6,70 @@ declare const __GIT_MESSAGE__: string
 declare const __GIT_TIMESTAMP__: string
 
 import { type ThemeMode } from '../hooks/useTheme'
+
+const REPO = 'xdamman/quickchat'
+const BRANCH = 'main'
+
+interface UpdateInfo {
+  sha: string
+  message: string
+  date: string
+}
+
+function useUpdateCheck() {
+  const [update, setUpdate] = useState<UpdateInfo | null>(null)
+  const [checking, setChecking] = useState(false)
+  const [updating, setUpdating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const check = async () => {
+    setChecking(true)
+    setError(null)
+    try {
+      const res = await fetch(`https://api.github.com/repos/${REPO}/commits/${BRANCH}`, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      })
+      if (!res.ok) throw new Error('Failed to check for updates')
+      const data = await res.json()
+      const remoteSha = data.sha.slice(0, 7)
+      if (remoteSha !== __GIT_SHA__) {
+        setUpdate({
+          sha: remoteSha,
+          message: data.commit.message.split('\n')[0],
+          date: new Date(data.commit.committer.date).toLocaleString()
+        })
+      } else {
+        setUpdate(null)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Check failed')
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  const applyUpdate = async () => {
+    setUpdating(true)
+    try {
+      // Unregister service workers and clear caches to force fresh load
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(registrations.map(r => r.unregister()))
+      }
+      if ('caches' in window) {
+        const names = await caches.keys()
+        await Promise.all(names.map(n => caches.delete(n)))
+      }
+      window.location.reload()
+    } catch {
+      window.location.reload()
+    }
+  }
+
+  useEffect(() => { check() }, [])
+
+  return { update, checking, updating, error, check, applyUpdate }
+}
 
 interface Props {
   publicKeyHex: string
@@ -19,6 +83,7 @@ interface Props {
 export function Settings({ publicKeyHex, displayName, theme, onThemeChange, onLogout, onBack }: Props) {
   const npub = hexToNpub(publicKeyHex)
   const [copied, setCopied] = useState(false)
+  const updateInfo = useUpdateCheck()
 
   const copyNpub = () => {
     navigator.clipboard.writeText(npub).then(() => {
@@ -103,6 +168,41 @@ export function Settings({ publicKeyHex, displayName, theme, onThemeChange, onLo
             <span className="mono" style={{fontSize: '12px'}}>{__GIT_TIMESTAMP__}</span>
           </div>
         </div>
+
+        {updateInfo.update ? (
+          <div className="settings-card" style={{marginTop: 8, border: '1px solid var(--accent)', background: 'var(--bg-hover)'}}>
+            <div className="settings-row" style={{flexDirection: 'column', alignItems: 'flex-start', gap: 4}}>
+              <span style={{fontWeight: 600}}>🆕 Update available</span>
+              <span className="mono" style={{fontSize: 12}}>{updateInfo.update.sha} — {updateInfo.update.message}</span>
+              <span style={{fontSize: 12, color: 'var(--text-secondary)'}}>{updateInfo.update.date}</span>
+            </div>
+            <button
+              className="btn-primary"
+              style={{marginTop: 8, width: '100%'}}
+              onClick={updateInfo.applyUpdate}
+              disabled={updateInfo.updating}
+            >
+              {updateInfo.updating ? 'Updating…' : 'Update now'}
+            </button>
+          </div>
+        ) : (
+          <div style={{marginTop: 8, display: 'flex', alignItems: 'center', gap: 8}}>
+            <button
+              className="btn-secondary"
+              style={{fontSize: 13, padding: '4px 12px'}}
+              onClick={updateInfo.check}
+              disabled={updateInfo.checking}
+            >
+              {updateInfo.checking ? 'Checking…' : 'Check for updates'}
+            </button>
+            {!updateInfo.checking && !updateInfo.error && (
+              <span style={{fontSize: 12, color: 'var(--text-secondary)'}}>✓ Up to date</span>
+            )}
+            {updateInfo.error && (
+              <span style={{fontSize: 12, color: 'var(--error)'}}>⚠ {updateInfo.error}</span>
+            )}
+          </div>
+        )}
       </div>
 
       <button className="btn-logout" onClick={onLogout}>
