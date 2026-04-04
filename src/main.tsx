@@ -4,6 +4,11 @@ import { loadConfig, type AppConfig } from './config'
 import { App } from './App'
 import './styles.css'
 
+// Lock orientation to portrait when possible (installed PWA)
+try {
+  screen.orientation?.lock?.('portrait').catch(() => {})
+} catch {}
+
 function Root() {
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [error, setError] = useState<string | null>(null)
