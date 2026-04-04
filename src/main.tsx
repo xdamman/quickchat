@@ -6,7 +6,7 @@ import './styles.css'
 
 // Lock orientation to portrait when possible (installed PWA)
 try {
-  screen.orientation?.lock?.('portrait').catch(() => {})
+  (screen.orientation as any)?.lock?.('portrait').catch(() => {})
 } catch {}
 
 function Root() {
