@@ -5,6 +5,7 @@ import { type RelayConnection } from '../lib/nostr'
 import { fetchProfile, getCachedProfile, type NostrProfile } from '../lib/profile'
 import { npubToHex, hexToNpub } from '../lib/nip19'
 import { ComposeBar } from './ComposeBar'
+import { extractEmoji } from '../lib/emoji'
 import { marked } from 'marked'
 
 // Configure marked for chat messages
@@ -93,6 +94,8 @@ function ContactProfileModal({ contact, avatarUrl, onClose }: {
           <img className="profile-avatar" src={avatarUrl} alt="" />
         ) : isEmojiAvatar(contact.avatar) ? (
           <div className="profile-avatar-emoji-large">{contact.avatar}</div>
+        ) : extractEmoji(contact.name) ? (
+          <div className="profile-avatar-emoji-large">{extractEmoji(contact.name)}</div>
         ) : (
           <div className="profile-avatar-placeholder">{contact.name[0]}</div>
         )}
@@ -194,9 +197,9 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
     <div className="chat-view" ref={chatViewRef}>
       <div className="chat-header">
         {!singleContact && <button className="btn-back" onClick={onBack}>←</button>}
-        {isEmojiAvatar(contact.avatar) && (
+        {(isEmojiAvatar(contact.avatar) || (!contact.avatar && extractEmoji(contact.name))) && (
           <span className="chat-header-emoji" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
-            {contact.avatar}
+            {isEmojiAvatar(contact.avatar) ? contact.avatar : extractEmoji(contact.name)}
           </span>
         )}
         <span className="chat-contact-name" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
@@ -235,6 +238,8 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
                       <img className="chat-avatar-img" src={avatarUrl} alt="" />
                     ) : isFirstInGroup && isEmojiAvatar(contact.avatar) ? (
                       <EmojiAvatar emoji={contact.avatar!} />
+                    ) : isFirstInGroup && extractEmoji(contact.name) ? (
+                      <EmojiAvatar emoji={extractEmoji(contact.name)!} />
                     ) : isFirstInGroup ? (
                       <div className="chat-avatar-placeholder">{contact.name[0]}</div>
                     ) : (

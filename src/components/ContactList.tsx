@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { type Contact } from '../config'
 import { getLastMessage, type StoredMessage } from '../lib/storage'
 import { npubToHex } from '../lib/nip19'
+import { extractEmoji } from '../lib/emoji'
 
 interface Props {
   contacts: Contact[]
@@ -64,6 +65,8 @@ export function ContactList({ contacts, onSelect, onSettings, typingSet }: Props
                   <span className="avatar-emoji">{contact.avatar}</span>
                 ) : contact.avatar ? (
                   <img src={contact.avatar} alt="" />
+                ) : extractEmoji(contact.name) ? (
+                  <span className="avatar-emoji">{extractEmoji(contact.name)}</span>
                 ) : (
                   <span className="avatar-placeholder">{contact.name[0]}</span>
                 )}
