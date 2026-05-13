@@ -66,6 +66,19 @@ Works with: Vercel, Cloudflare Pages, Netlify, nginx, any static file server.
 }
 ```
 
+`contacts` and `whitelistedContacts` also accept NIP-05 specifiers:
+
+```json
+{
+  "contacts": "xavierdamman.com",
+  "whitelistedContacts": ["xbot@xavierdamman.com", "npub1..."]
+}
+```
+
+- `"name@domain.com"` resolves one contact via `https://domain.com/.well-known/nostr.json?name=name`.
+- `"domain.com"` imports all names from `/.well-known/nostr.json` except the `_` wildcard.
+- Resolved NIP-05 contacts get emoji avatars automatically: embedded emoji first, semantic role defaults such as `xbot` → 🤖 / `coder` → 🛠️, then a stable generic emoji.
+
 ## How It Works
 
 1. Visitor lands on `chat.yourdomain.com`

@@ -1,6 +1,6 @@
 import { hexToNpub } from './nip19'
 import { type Contact, type ContactProtocol } from '../config'
-import { extractEmoji } from './emoji'
+import { defaultEmojiAvatar } from './emoji'
 
 export interface Nip05Names {
   [name: string]: string  // name -> hex pubkey
@@ -96,12 +96,12 @@ export async function resolveContacts(
     for (const [entryName, hexPubkey] of entries) {
       const npub = hexToNpub(hexPubkey as string)
       const displayName = entryName === '_' ? domain : entryName
-      const emoji = extractEmoji(displayName)
+      const avatar = defaultEmojiAvatar(displayName)
 
       contacts.push({
         npub,
         name: displayName,
-        avatar: emoji || '',
+        avatar,
         description: '',
         protocol: defaultProtocol,
       })

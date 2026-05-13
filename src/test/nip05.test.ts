@@ -120,4 +120,41 @@ describe('resolveContacts', () => {
     const contacts = await resolveContacts(['xbot 🤖@example.com'])
     expect(contacts[0].avatar).toBe('🤖')
   })
+
+  it('keeps emoji avatars for NIP-05 contacts whose names do not contain emoji', async () => {
+    const mockResponse = {
+      names: {
+        xbot: 'ff3e0c27e7fb240231b2cbf7caa03097fc38783c992f4ec2edf0b5fe2ab5d980',
+        'xbot-coder': '34e0a5b2ef5ae764466756acc8f190b00c1a3caa7fbfc6cd8f62d2fdc6aa8855',
+        'xbot-openletter': '48b48d0d16a02eb85f07185abbc0d1c0c6b2b371ed9293db302cfef2fd7385fc',
+      },
+    }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    } as Response)
+
+    const contacts = await resolveContacts(['xavierdamman.com'])
+
+    expect(contacts.map(c => [c.name, c.avatar])).toEqual([
+      ['xbot', '🤖'],
+      ['xbot-coder', '🛠️'],
+      ['xbot-openletter', '📜'],
+    ])
+  })
+
+  it('assigns a stable emoji avatar to generic NIP-05 contacts', async () => {
+    const mockResponse = {
+      names: { alice: '3404a9c009ab7a2e825c2e5fce4e8d9f60ea93363117a7c013bf6c7664d171c6' },
+    }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse,
+    } as Response)
+
+    const contacts = await resolveContacts(['alice@example.com'])
+
+    expect(contacts[0].avatar).toMatch(/\p{Emoji}/u)
+    expect(contacts[0].avatar).not.toBe('')
+  })
 })
