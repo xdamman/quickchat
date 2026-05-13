@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "deploy:local": "bash scripts/deploy-local-nginx.sh",
     "test": "vitest run",
     "test:watch": "vitest"
   },
