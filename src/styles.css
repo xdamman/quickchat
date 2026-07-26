@@ -388,8 +388,48 @@ html, body {
   line-height: 1;
 }
 
-.chat-contact-name {
+.chat-contact-profile {
+  min-width: 0;
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.chat-header-avatar,
+.chat-header-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.chat-header-avatar {
+  object-fit: cover;
+}
+
+.chat-header-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-200);
+  color: var(--gray-500);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.chat-contact-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 17px;
   font-weight: 600;
 }
@@ -445,6 +485,16 @@ html, body {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
+}
+
+.chat-avatar-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
 }
 
 .chat-avatar-img {

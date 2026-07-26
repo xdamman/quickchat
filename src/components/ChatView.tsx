@@ -72,13 +72,16 @@ function DeliveryTicks({ status }: { status?: string }) {
 }
 
 /* ========== Contact Profile Modal ========== */
-function ContactProfileModal({ contact, avatarUrl, onClose }: {
+function ContactProfileModal({ contact, profile, avatarUrl, onClose }: {
   contact: Contact
+  profile: NostrProfile | null
   avatarUrl: string | null
   onClose: () => void
 }) {
   const npub = contact.npub
   const [copied, setCopied] = useState(false)
+  const displayName = profile?.display_name || profile?.name || contact.name
+  const description = profile?.about || contact.description
 
   const copyNpub = () => {
     navigator.clipboard.writeText(npub).then(() => {
@@ -99,9 +102,9 @@ function ContactProfileModal({ contact, avatarUrl, onClose }: {
         ) : (
           <div className="profile-avatar-placeholder">{contact.name[0]}</div>
         )}
-        <h2 className="profile-name">{contact.name}</h2>
-        {contact.description && (
-          <p className="profile-description">{contact.description}</p>
+        <h2 className="profile-name">{displayName}</h2>
+        {description && (
+          <p className="profile-description">{description}</p>
         )}
         <div className="profile-npub">
           <button className="npub-copy-btn" onClick={copyNpub}>
@@ -120,25 +123,30 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
   const bottomRef = useRef<HTMLDivElement>(null)
   const chatViewRef = useRef<HTMLDivElement>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [profile, setProfile] = useState<NostrProfile | null>(null)
   const [showProfile, setShowProfile] = useState(false)
   const contactHexForTyping = npubToHex(contact.npub)
   const isTyping = typingSet.has(contactHexForTyping)
 
-  // Fetch contact's kind:0 profile for avatar
+  // Fetch the contact's kind:0 profile for their avatar and description.
   useEffect(() => {
     const contactHex = npubToHex(contact.npub)
 
     // Check cache first
     const cached = getCachedProfile(contactHex)
+    setProfile(cached)
     if (cached?.picture) {
       setAvatarUrl(cached.picture)
     } else if (contact.avatar && !isEmojiAvatar(contact.avatar)) {
       setAvatarUrl(contact.avatar)
+    } else {
+      setAvatarUrl(null)
     }
 
     // Fetch from relay
     if (relay) {
       const unsub = fetchProfile(relay, contactHex, (profile: NostrProfile) => {
+        setProfile(profile)
         if (profile.picture) {
           setAvatarUrl(profile.picture)
         }
@@ -197,14 +205,22 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
     <div className="chat-view" ref={chatViewRef}>
       <div className="chat-header">
         {!singleContact && <button className="btn-back" onClick={onBack}>←</button>}
-        {(isEmojiAvatar(contact.avatar) || (!contact.avatar && extractEmoji(contact.name))) && (
-          <span className="chat-header-emoji" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
-            {isEmojiAvatar(contact.avatar) ? contact.avatar : extractEmoji(contact.name)}
-          </span>
-        )}
-        <span className="chat-contact-name" onClick={() => setShowProfile(true)} style={{ cursor: 'pointer' }}>
-          {contact.name}
-        </span>
+        <button
+          className="chat-contact-profile"
+          onClick={() => setShowProfile(true)}
+          aria-label={`View ${contact.name}'s profile`}
+        >
+          {avatarUrl ? (
+            <img className="chat-header-avatar" src={avatarUrl} alt="" />
+          ) : isEmojiAvatar(contact.avatar) || (!contact.avatar && extractEmoji(contact.name)) ? (
+            <span className="chat-header-emoji">
+              {isEmojiAvatar(contact.avatar) ? contact.avatar : extractEmoji(contact.name)}
+            </span>
+          ) : (
+            <span className="chat-header-avatar-placeholder">{contact.name[0]}</span>
+          )}
+          <span className="chat-contact-name">{contact.name}</span>
+        </button>
         <span className="chat-lock">🔒</span>
       </div>
 
@@ -234,14 +250,22 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
               <div className={`chat-bubble-row ${msg.isMine ? 'mine' : 'theirs'}`}>
                 {!msg.isMine && (
                   <div className="chat-avatar-slot">
-                    {isFirstInGroup && avatarUrl ? (
-                      <img className="chat-avatar-img" src={avatarUrl} alt="" />
-                    ) : isFirstInGroup && isEmojiAvatar(contact.avatar) ? (
-                      <EmojiAvatar emoji={contact.avatar!} />
-                    ) : isFirstInGroup && extractEmoji(contact.name) ? (
-                      <EmojiAvatar emoji={extractEmoji(contact.name)!} />
-                    ) : isFirstInGroup ? (
-                      <div className="chat-avatar-placeholder">{contact.name[0]}</div>
+                    {isFirstInGroup ? (
+                      <button
+                        className="chat-avatar-button"
+                        onClick={() => setShowProfile(true)}
+                        aria-label={`View ${contact.name}'s profile`}
+                      >
+                        {avatarUrl ? (
+                          <img className="chat-avatar-img" src={avatarUrl} alt="" />
+                        ) : isEmojiAvatar(contact.avatar) ? (
+                          <EmojiAvatar emoji={contact.avatar!} />
+                        ) : extractEmoji(contact.name) ? (
+                          <EmojiAvatar emoji={extractEmoji(contact.name)!} />
+                        ) : (
+                          <div className="chat-avatar-placeholder">{contact.name[0]}</div>
+                        )}
+                      </button>
                     ) : (
                       <div className="chat-avatar-spacer" />
                     )}
@@ -281,6 +305,7 @@ export function ChatView({ contact, messages, config, sending, relay, onSend, on
       {showProfile && (
         <ContactProfileModal
           contact={contact}
+          profile={profile}
           avatarUrl={avatarUrl}
           onClose={() => setShowProfile(false)}
         />
