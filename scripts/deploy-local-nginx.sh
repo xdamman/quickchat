@@ -83,12 +83,41 @@ test -f dist/index.html
 
 RSYNC_ARGS=(
   -a
+  --no-perms
+  --no-owner
+  --no-group
   --delete
   --itemize-changes
 )
 
 if [[ "$INCLUDE_CONFIG" -eq 0 ]]; then
   RSYNC_ARGS+=(--exclude=/config.json)
+
+  # Preserve production-only helpers that may exist in the nginx root but are not
+  # part of the Vite dist/. Without these excludes, --delete can silently remove
+  # runtime shims that the preserved production config still depends on.
+  RSYNC_ARGS+=(--exclude=/contact-source.js --exclude=/contact-source.test.mjs --exclude=/package.json)
+
+  # chat.xavierdamman.com may use a production config with a contactSource shim
+  # for NIP-05 caching. If the target has that shim, inject it into the freshly
+  # built index.html before the app bundle so a normal deploy doesn't erase the
+  # production-only behavior.
+  if [[ -f "$TARGET/contact-source.js" && -f "$TARGET/config.json" ]]; then
+    if node -e "const c=require(process.argv[1]); process.exit(c.contactSource ? 0 : 1)" "$TARGET/config.json"; then
+      if ! grep -q '/contact-source.js' dist/index.html; then
+        python3 - <<'PY'
+from pathlib import Path
+p = Path('dist/index.html')
+s = p.read_text()
+insert = '    <script>window.__QUICKCHAT_NIP05_FRESH_MS=3600000;window.__QUICKCHAT_NIP05_STALE_MS=604800000;</script>\n    <script type="module" src="/contact-source.js"></script>\n'
+marker = '    <script type="module" crossorigin src="/assets/'
+if marker not in s:
+    raise SystemExit('app script marker not found in dist/index.html')
+p.write_text(s.replace(marker, insert + marker, 1))
+PY
+      fi
+    fi
+  fi
 fi
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
@@ -98,28 +127,45 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   exit 0
 fi
 
+SUDO=()
+if [[ ! -w "$(dirname "$TARGET")" || ( -e "$TARGET" && ! -w "$TARGET" ) ]]; then
+  SUDO=(sudo)
+fi
+
 if [[ ! -d "$TARGET" ]]; then
-  sudo mkdir -p "$TARGET"
+  "${SUDO[@]}" mkdir -p "$TARGET"
 fi
 
 BACKUP_DIR="/var/backups/quickchat"
+if ! mkdir -p "$BACKUP_DIR" 2>/dev/null || [[ ! -w "$BACKUP_DIR" ]]; then
+  BACKUP_DIR="$HOME/quickchat-backups"
+  mkdir -p "$BACKUP_DIR"
+fi
 BACKUP_FILE="$BACKUP_DIR/quickchat-$(date -u +%Y%m%dT%H%M%SZ).tar.gz"
-sudo mkdir -p "$BACKUP_DIR"
 if [[ -d "$TARGET" ]]; then
   echo "Creating backup: $BACKUP_FILE"
-  sudo tar -C "$TARGET" -czf "$BACKUP_FILE" .
+  if [[ -w "$BACKUP_DIR" ]]; then
+    tar -C "$TARGET" -czf "$BACKUP_FILE" .
+  else
+    "${SUDO[@]}" tar -C "$TARGET" -czf "$BACKUP_FILE" .
+  fi
 fi
 
 echo "Syncing dist/ to $TARGET/"
-sudo rsync "${RSYNC_ARGS[@]}" dist/ "$TARGET/"
+"${SUDO[@]}" rsync "${RSYNC_ARGS[@]}" --omit-dir-times dist/ "$TARGET/"
 
 # Keep nginx workers able to read the static tree even when deployed by root.
-sudo find "$TARGET" -type d -exec chmod 755 {} +
-sudo find "$TARGET" -type f -exec chmod 644 {} +
+if [[ ${#SUDO[@]} -gt 0 ]]; then
+  "${SUDO[@]}" find "$TARGET" -type d -exec chmod 755 {} +
+  "${SUDO[@]}" find "$TARGET" -type f -exec chmod 644 {} +
+else
+  find "$TARGET" -user "$(id -u)" -type d -exec chmod 755 {} +
+  find "$TARGET" -user "$(id -u)" -type f -exec chmod 644 {} +
+fi
 
 if [[ "$INCLUDE_CONFIG" -eq 0 && ! -f "$TARGET/config.json" && -f dist/config.json ]]; then
   echo "No target config.json existed; installing dist/config.json once."
-  sudo install -m 0644 dist/config.json "$TARGET/config.json"
+  "${SUDO[@]}" install -m 0644 dist/config.json "$TARGET/config.json"
 fi
 
 echo "Deployment complete."
